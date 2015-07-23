@@ -1,149 +1,94 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
 
-class AnagramsAndScore
-{
-	String listofAnagram;
-	int score;
-	
-	AnagramsAndScore()
-	{
-		listofAnagram=null;
-		score = -1;
-	}
-}
-class Anagrams {
-
-	private Map<String, String> map = new HashMap<String, String>();
-
-	public String sortString(String original) {
-		char[] chars = original.toCharArray();
-		Arrays.sort(chars);
-		String sorted = new String(chars);
-		return sorted;
-	}
-
-	public void addToHash(String word) {
-		String sortedWord = sortString(word);
-		if (map.containsKey(sortedWord)) {
-			map.put(sortedWord, map.get(sortedWord) + " " + word);
-		} else {
-			map.put(sortedWord, word);
-		}
-	}
-
-	public void createMapFromFile() {
-
-		readFile("dictionary.txt");
-		//System.out.println(map);
-
-	}
-
-	public void readFile(String path) {
-		BufferedReader br = null;
-		try {
-			String sCurrentLine;
-			br = new BufferedReader(new FileReader(path));
-			while ((sCurrentLine = br.readLine()) != null) {
-				this.addToHash(sCurrentLine);
+public class Scrabble {
+		
+	public static boolean containsWord(String sameWeightWords, String comparionWord){
+		
+		boolean result=false;
+		
+		if(sameWeightWords!=null)
+		{
+			String [] words = sameWeightWords.split(" ");
+			
+			for(String word: words) {
+				if (comparionWord.trim().equals(word.trim())) {
+					return true;
+				}
 			}
+		}
+		return result;
+		
+	}
+	
+	public static int updatedScore(String word, String rackAlphabets) {
+		char [] presentLetters = rackAlphabets.toCharArray();
+		int [] alphabetWeights = new WordScore().getAlphabetWeights();
+		int score = 0;
+		for (int i=0; i< presentLetters.length; i++) {
+			if (presentLetters[i]!=' ' && word.contains(Character.toString(presentLetters[i]))) {
+				score += alphabetWeights[presentLetters[i]-'a'];
+			}
+		}
+		return score;
+	}
+	
+	public static void writeToFile(String fileName, Map<Integer, String> sortedWords) {
 
+		try {
+			BufferedWriter recommendation_writer = new BufferedWriter(new FileWriter(new File(fileName)));
+			
+			for (Map.Entry<Integer, String> entry : sortedWords.entrySet()) {
+				System.out.println(">> "+entry.getKey()+" "+entry.getValue());
+				recommendation_writer.write(entry.getKey()+" - "+entry.getValue()+"\n");
+			}
+			recommendation_writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				if (br != null)
-					br.close();
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-		}
-	}
-	
-
-
-	public AnagramsAndScore getAnagramsOf(String key) {
-		
-		key = sortString(key);
-		String wordsAndScore = map.get(key);
-		AnagramsAndScore entity = new AnagramsAndScore();
-		if(wordsAndScore!=null)
-		{
-			entity = new AnagramsAndScore();
-			wordScorer obj = new wordScorer();
-			entity.score = obj.getWordScore(key);
-			entity.listofAnagram=wordsAndScore;
 		}
 		
-		return entity;
-	}
-
-}
-
-class recommendWords
-{
+	} 
 	
-	public Map<Integer, String> recommendation(String wordInput)
-	{
-		Anagrams anagramObject = new Anagrams();
-		anagramObject.createMapFromFile();
-		AllCombinations allCoombination = new AllCombinations();
-		String [] allWords = allCoombination.possibleCombinations(wordInput);
-		Map<Integer,String> MapWords = new HashMap<Integer,String>();
-		AnagramsAndScore result;
-		int maxScore=0;
-		String highestScoringWords=null;
+	public static void main(String args[]) {
 		
-		String keyString="";
+		Scanner input = new Scanner(System.in);		
+		System.out.print("GIVE INPUT (7 Letters at Max) \n");
+		String rackWords = input.nextLine();
+		System.out.print("GIVE Output File Name\n");
+		String outputFile = input.nextLine();
+		Map<Integer, String> updatedWordScore = new HashMap<Integer, String>();
+		WordRecommender wordRecommender = new WordRecommender();
+		Map<Integer, String> sortedWords = new TreeMap<Integer, String>(wordRecommender.Recommendation(rackWords));
 		
-		for (String words: allWords) {
-
-			if(!keyString.contains(anagramObject.sortString(words)))
-			{
-				result=anagramObject.getAnagramsOf(words);
-				if(result.listofAnagram!=null)
-				{
-					if(MapWords.containsKey(result.score))
-					{
-						MapWords.put(result.score, result.listofAnagram+" "+MapWords.get(result.score));
-					}
-					else
-					{
-						MapWords.put(result.score, result.listofAnagram);
+		if(rackWords.contains(" ")) {
+			
+			for(String line: sortedWords.values()) {
+				String [] words = line.split(" ");
+				
+				for(String word: words) {
+					
+					int finalScore = updatedScore(word.trim(), rackWords.trim());
+					
+					if (updatedWordScore.containsKey(finalScore)) {
+						if(!containsWord(updatedWordScore.get(finalScore),word))
+							updatedWordScore.put(finalScore, (updatedWordScore.get(finalScore) +" "+ word));
+						
+					} else {
+						updatedWordScore.put(finalScore, word);
+						
 					}
 					
 				}
 			}
-			
+			sortedWords = new TreeMap<Integer, String>(updatedWordScore);
 		}
 		
-		return MapWords;
-		
-	}
-	
-}
-public class Scrabble {
-
-	public static void main(String args[]) {
-
-		Scanner input = new Scanner(System.in);
-		
-		System.out.print("GIVE INPUT (7 Letters at Max");
-		String wordInput = input.next();
-		recommendWords getWords = new recommendWords();
-		Map<Integer, String> SortedWords = new TreeMap<Integer, String>(getWords.recommendation(wordInput));
-		
-		for (Map.Entry<Integer, String> entry : SortedWords.entrySet()) {
-		
-			System.out.println(">> "+entry.getValue()+" "+entry.getKey());
-		}
-		
-		
+		writeToFile(outputFile, sortedWords);
 	}
 }
