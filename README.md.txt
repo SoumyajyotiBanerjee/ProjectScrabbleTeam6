@@ -1,4 +1,4 @@
-Aim: given a set of tiles on a scrabble rack , the program provides the user with all possible words that can be formed along with their score in descending order.
+Given a set of tiles on a scrabble rack , the program provides the user with all possible words that can be formed along with their score in descending order.
 
 Steps:
 1. Create all possible combinations. 
