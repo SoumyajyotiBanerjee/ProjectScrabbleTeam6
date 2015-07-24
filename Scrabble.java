@@ -57,18 +57,22 @@ public class Scrabble {
 	
 	public static void main(String args[]) {
 		
-		Scanner input = new Scanner(System.in);		
-		System.out.print("GIVE INPUT (7 Letters at Max) \n");
+		Scanner input = new Scanner(System.in);	
+		
+		System.out.print("GIVE INPUT  \n");
 		String rackWords = input.nextLine();
-		System.out.print("GIVE Output File Name\n");
+		
+		System.out.print("GIVE OUTPUT FILE NAME \n");
 		String outputFile = input.nextLine();
+		
+		
 		Map<Integer, String> updatedWordScore = new HashMap<Integer, String>();
 		WordRecommender wordRecommender = new WordRecommender();
 		Map<Integer, String> sortedWords = new TreeMap<Integer, String>(wordRecommender.Recommendation(rackWords));
 		
-		if(rackWords.contains(" ")) {
+		if (rackWords.contains(" ")) {
 			
-			for(String line: sortedWords.values()) {
+			for (String line: sortedWords.values()) {
 				String [] words = line.split(" ");
 				
 				for(String word: words) {
@@ -76,7 +80,7 @@ public class Scrabble {
 					int finalScore = updatedScore(word.trim(), rackWords.trim());
 					
 					if (updatedWordScore.containsKey(finalScore)) {
-						if(!containsWord(updatedWordScore.get(finalScore),word))
+						if (!containsWord(updatedWordScore.get(finalScore),word))
 							updatedWordScore.put(finalScore, (updatedWordScore.get(finalScore) +" "+ word));
 						
 					} else {
